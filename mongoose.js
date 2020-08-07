@@ -19,11 +19,11 @@ db.once("open", () => {
 
   const schema = mongoose.Schema;
   const AnimalSchema = new mongoose.Schema({
-    type: String,
-    color: String,
-    size: String,
-    mass: Number,
-    name: String
+    type: { type: String, default: "goldfish" },
+    color: { type: String, default: "small" },
+    size: { type: String, default: "golden" },
+    mass: { type: Number, default: 0.007 },
+    name: { type: String, default: 'Angela' }
   });
   const Animal = new mongoose.model("Animal", AnimalSchema);
 
@@ -35,15 +35,38 @@ db.once("open", () => {
     name: 'Lawrence'
   });
 
-  elephant.save(err => {
-    if (err) {
-      console.error("Save failed with error:", err);
-    } else {
-      console.log("Saved!");
-    }
+  const animal = new Animal({});
 
-    db.close(() => console.log("db connection closed."));
+  const whale = new Animal({
+    type: "whale",
+    size: "big",
+    mass: 190500,
+    name: "Fig"
   });
 
+  Animal.deleteMany({}, (err) => {
+    elephant.save(err => {
+      if (err) console.error("Save failed with error:", err);
+  
+      animal.save(() => {
+        if (err) console.error("Save failed with error:", err);
+
+        whale.save(() => {
+          if (err) console.error("Save failed with error:", err);
+          
+          Animal.find({size: "big"}, (err, animals) => {
+
+            if (err) console.error("Save failed with error:", err);
+            
+            animals.forEach(animal => {
+              console.log(animal.name + "the " + animal.color + " " + animal.type);
+            });
+
+            db.close(() => console.log("db connection closed."));
+          });
+        });
+      });
+    });
+  });
 });
 
