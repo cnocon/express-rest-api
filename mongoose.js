@@ -18,19 +18,31 @@ db.once("open", () => {
   // All database communication goes here
 
   const schema = mongoose.Schema;
+
   const AnimalSchema = new mongoose.Schema({
     type: { type: String, default: "goldfish" },
-    color: { type: String, default: "small" },
-    size: { type: String, default: "golden" },
+    size: String,
+    color: { type: String, default: "golden" },
     mass: { type: Number, default: 0.007 },
     name: { type: String, default: 'Angela' }
   });
+
+  AnimalSchema.pre("save", function(next) {
+    if (this.mass >= 100) {
+      this.size = "big";
+    } else if (this.mass >= 5 && this.mass < 100) {
+      this.size = "medium"; 
+    } else {
+      this.size = "small";
+    }
+    next();
+  });
+
   const Animal = new mongoose.model("Animal", AnimalSchema);
 
   const elephant = new Animal({
     type: 'elephant',
     color: 'gray',
-    size: 'big',
     mass: 6000,
     name: 'Lawrence'
   });
@@ -39,32 +51,44 @@ db.once("open", () => {
 
   const whale = new Animal({
     type: "whale",
-    size: "big",
     mass: 190500,
     name: "Fig"
   });
 
+  const animalData = [
+    {
+      type: "mouse",
+      color: "gray",
+      mass: 0.035,
+      name: "Marvin"
+    },
+    {
+      type: "nutria",
+      color: "brown",
+      mass: 6.35,
+      name: "Gretchen"
+    },
+    {
+      type: "wolf",
+      color: "gray",
+      mass: 45,
+      name: "Iris"
+    },
+    elephant,
+    animal,
+    whale
+  ]
+
   Animal.deleteMany({}, (err) => {
-    elephant.save(err => {
-      if (err) console.error("Save failed with error:", err);
-  
-      animal.save(() => {
-        if (err) console.error("Save failed with error:", err);
-
-        whale.save(() => {
-          if (err) console.error("Save failed with error:", err);
-          
-          Animal.find({size: "big"}, (err, animals) => {
-
-            if (err) console.error("Save failed with error:", err);
-            
-            animals.forEach(animal => {
-              console.log(animal.name + "the " + animal.color + " " + animal.type);
-            });
-
-            db.close(() => console.log("db connection closed."));
-          });
+    if (err) console.error("Delete failed with error:", err);
+    Animal.create(animalData, (err, animals) => {
+      if (err) console.error("Create failed with error:", err);
+      Animal.find({}, (err, animals) => {            
+        animals.forEach(animal => {
+          console.log(animal.name + "the " + animal.color + " " 
+            + animal.type + " is a " + animal.size + "-sized animal.");
         });
+        db.close(() => console.log("db connection closed."));
       });
     });
   });
