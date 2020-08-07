@@ -19,9 +19,6 @@ db.once("open", () => {
 
   const schema = mongoose.Schema;
 
-
-
-
   const AnimalSchema = new mongoose.Schema({
     type: { type: String, default: "goldfish" },
     size: String,
@@ -44,6 +41,11 @@ db.once("open", () => {
   AnimalSchema.statics.findSize = function(size, callback) {
     // this == animal
     return this.find({ size }, callback);
+  };
+
+  AnimalSchema.methods.findSameColor = function(callback) {
+    // this == instance of document itself
+    return this.model("Animal").find({color: this.color}, callback);
   };
 
   const Animal = new mongoose.model("Animal", AnimalSchema);
@@ -89,14 +91,22 @@ db.once("open", () => {
 
   Animal.deleteMany({}, (err) => {
     if (err) console.error("Delete failed with error:", err);
-    Animal.create(animalData, (err, animals) => {
+    
+    Animal.create(animalData, function(err, animals) {
       if (err) console.error("Create failed with error:", err);
-      Animal.findSize("medium", (err, animals) => {            
-        animals.forEach(animal => {
-          console.log(animal.name + "the " + animal.color + " " 
-            + animal.type + " is a " + animal.size + "-sized animal.");
+      
+      Animal.findOne({type: "elephant"}, function(err, elephant) {   
+        elephant.findSameColor(function(err, animals) {
+          if (err) console.error("Create failed with error:", err);
+          
+          animals.forEach((animal) => {
+            console.log(
+              `${animal.name} the ${animal.color} ${animal.type} is a ${animal.size}-sized animal`
+            );
+          });
+
+          db.close(() => console.log("db connection closed."));
         });
-        db.close(() => console.log("db connection closed."));
       });
     });
   });
