@@ -32,6 +32,10 @@ router.param('aID', function(req, res, next, id) {
 // GET /questions
 // Route for questions collection
 router.get('/', (req, res, next) => {
+  // Question.deleteMany({}, (err) => {
+  //   if (err) return next(err);
+  //   next();
+  // });
   Question.find({}, null, {sort: {createdAt: -1}}, (err, questions) => {
     if (err) return next(err);
     res.json(questions);
@@ -91,6 +95,16 @@ router.delete('/:qID/answers/:aID', (req, res, next) => {
       if (err) return next(err);
       res.json(question);
     })
+  });
+});
+
+
+// DELETE /questions/:qID
+// Delete a specific answer
+router.delete('/:qID', (req, res, next) => {
+  req.question.remove((err, question) => {
+    if (err) return next(err);
+    res.send("Successfully deleted");
   });
 });
 

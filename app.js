@@ -19,12 +19,20 @@ mongoose.connect('mongodb://localhost:27017/q-and-api', {
 
 const db = mongoose.connection;
 
-db.on('error', err => {
-  console.error("connection error:", err);
-});
+db.on('error', err => console.error("connection error:", err));
+db.once("open", () => console.log('db connection successful'));
 
-db.once("open", () => {
-  console.log('db connection successful');
+// Configure pre-flight CORS 
+app.use((req, res, next) => {
+  // Any domain can make requests to this API
+  res.header('Access-Control-Allow-Origin', '*');
+  // Accepteable request headers
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  if (req.method = "OPTIONS") {
+    res.header('Access-Control-Allow-Methods', 'PUT,POST,DELETE');
+    return res.status(200).json({});
+  }
+  next();
 });
 
 app.use('/questions', routes);
@@ -40,9 +48,7 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   res.status(err.status || 500);
   res.json({
-    error: {
-      message: err.message
-    }
+    error: { message: err.message }
   })
 });
 

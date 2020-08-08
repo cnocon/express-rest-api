@@ -17,7 +17,7 @@ const sortAnswers = (a, b) => {
 
 const AnswerSchema = new Schema({
   _id: { type: String, default: shortid.generate },
-  text: String,
+  text: String, 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   votes: { type: Number, default: 0 }
